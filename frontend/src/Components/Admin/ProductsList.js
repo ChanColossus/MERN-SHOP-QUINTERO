@@ -9,44 +9,55 @@ import { getToken } from '../../utils/helpers';
 import axios from 'axios'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useDispatch, useSelector } from 'react-redux'
+import {
+    getAdminProducts,
+    deleteProduct,
+    updateProduct,
+    clearErrors,
+} from '../../actions/productActions'
+import { DELETE_PRODUCT_RESET } from '../../constants/productConstants'
 
 const ProductsList = () => {
-    const [products, setProducts] = useState([])
-    const [error, setError] = useState('')
+    const dispatch = useDispatch();
+    const { loading, error, products } = useSelector(state => state.products)
+    // const [products, setProducts] = useState([])
+    // const [error, setError] = useState('')
     const [deleteError, setDeleteError] = useState('')
     const [users, setUsers] = useState([])
     const [orders, setOrders] = useState([])
-    const [loading, setLoading] = useState(true)
+    // const [loading, setLoading] = useState(true)
     const [isDeleted, setIsDeleted] = useState(false)
 
     let navigate = useNavigate()
-    const getAdminProducts = async () => {
-        try {
+    // const getAdminProducts = async () => {
+    //     try {
 
-            const config = {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${getToken()}`
-                }
-            }
+    //         const config = {
+    //             headers: {
+    //                 'Content-Type': 'multipart/form-data',
+    //                 'Authorization': `Bearer ${getToken()}`
+    //             }
+    //         }
 
-            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/v1/admin/products`, config)
-            console.log(data)
-            setProducts(data.products)
-            setLoading(false)
-        } catch (error) {
+    //         const { data } = await axios.get(`${process.env.REACT_APP_API}/api/v1/admin/products`, config)
+    //         console.log(data)
+    //         setProducts(data.products)
+    //         setLoading(false)
+    //     } catch (error) {
 
-            setError(error.response.data.message)
+    //         setError(error.response.data.message)
 
-        }
-    }
+    //     }
+    // }
     useEffect(() => {
-        getAdminProducts()
+        dispatch(getAdminProducts())
 
         if (error) {
             toast.error(error, {
                 position: toast.POSITION.BOTTOM_RIGHT
             });
+            dispatch(clearErrors())
         }
 
         if (deleteError) {
@@ -56,32 +67,34 @@ const ProductsList = () => {
         }
 
         if (isDeleted) {
+            dispatch({ type: DELETE_PRODUCT_RESET })
             toast.success('Product deleted successfully', {
                 position: toast.POSITION.BOTTOM_RIGHT
             })
             navigate('/admin/products');
+            
 
         }
 
-    }, [error, deleteError, isDeleted,])
+    }, [error, deleteError, isDeleted, dispatch, navigate])
 
-    const deleteProduct = async (id) => {
-        try {
-            const config = {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${getToken()}`
-                }
-            }
-            const { data } = await axios.delete(`${process.env.REACT_APP_API}/api/v1/admin/product/${id}`, config)
+    // const deleteProduct = async (id) => {
+    //     try {
+    //         const config = {
+    //             headers: {
+    //                 'Content-Type': 'multipart/form-data',
+    //                 'Authorization': `Bearer ${getToken()}`
+    //             }
+    //         }
+    //         const { data } = await axios.delete(`${process.env.REACT_APP_API}/api/v1/admin/product/${id}`, config)
 
-            setIsDeleted(data.success)
-            setLoading(false)
-        } catch (error) {
-            setDeleteError(error.response.data.message)
+    //         setIsDeleted(data.success)
+    //         // setLoading(false)
+    //     } catch (error) {
+    //         setDeleteError(error.response.data.message)
 
-        }
-    }
+    //     }
+    // }
 
 
 
@@ -137,7 +150,7 @@ const ProductsList = () => {
     }
 
     const deleteProductHandler = (id) => {
-        deleteProduct(id)
+        dispatch(deleteProduct(id))
     }
 
     return (
